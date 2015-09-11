@@ -1,3 +1,5 @@
+package core;
+
 import base.Callback;
 import base.EventEmitter;
 
@@ -49,14 +51,16 @@ public class Elevator extends EventEmitter{
      * @return 自身,实现链式调用
      */
     public Elevator buttonPressed(Direction direction, int floorLevel, List<Human> pressers) {
+        // 构造外部按钮请求
         OuterRequest req = new OuterRequest()
                 .setDirection(direction)
                 .setFloorLevel(floorLevel)
                 .setPressers(pressers);
-
         outerRequests.add(req);
 
+        // 触发事件
         this.emit(ElevatorEvent.OUTER_PRESSED, req);
+
         return this;
     }
 }
