@@ -1,4 +1,4 @@
-package base;
+package event;
 
 /**
  * 回调函数通用接口

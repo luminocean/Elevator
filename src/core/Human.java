@@ -1,6 +1,6 @@
 package core;
 
-import base.EventEmitter;
+import event.EventEmitter;
 
 /**
  * 电梯乘客类

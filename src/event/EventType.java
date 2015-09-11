@@ -1,4 +1,4 @@
-package base;
+package event;
 
 /**
  * 通用事件类型
