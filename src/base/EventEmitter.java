@@ -23,12 +23,12 @@ public class EventEmitter {
     /**
      * 发送指定的事件
      * @param type 事件类型
-     * @param data 事件数据
+     * @param data 事件数据,可选
      * @param <T> 范型类型
      */
-    public <T> void emit(EventType type, T data){
+    public <T> void emit(EventType type, T... data){
         List<Callback> callbacks = getCallbacks(type);
-        callbacks.stream().forEach( callback -> callback.run(data) );
+        callbacks.stream().forEach( callback -> callback.run(data.length>0?data[0]:null));
     }
 
     private Map<EventType,List<Callback>> callbackMap = new HashMap<EventType,List<Callback>>();

@@ -1,8 +1,8 @@
 package base;
 
 /**
- * 事件类型
+ * 通用事件类型
  */
-public enum EventType {
-    BEGIN, END
+public class EventType{
+    public static int BEGIN, END;
 }
