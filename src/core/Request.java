@@ -5,12 +5,13 @@ package core;
  */
 public class Request {
     protected int stopFloor = 0;
+    protected Direction direction;
 
     public int getStopFloor() {
         return stopFloor;
     }
 
-    public void setStopFloor(int stopFloor) {
-        this.stopFloor = stopFloor;
+    public Direction getDirection() {
+        return direction;
     }
 }

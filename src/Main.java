@@ -18,8 +18,8 @@ public class Main {
         new Human()
                 .setName("Tom")
                 .setElevator(elevator)
-                .setCurrentFloor(10)
-                .setTargetFloor(1).go();
+                .setCurrentFloor(3)
+                .setTargetFloor(8).go();
 
         // 3秒后
         try {
@@ -31,7 +31,7 @@ public class Main {
         new Human()
                 .setName("Rachel")
                 .setElevator(elevator)
-                .setCurrentFloor(8)
+                .setCurrentFloor(5)
                 .setTargetFloor(4).go();
     }
 }

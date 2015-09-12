@@ -5,16 +5,11 @@ package core;
  * 每次在电梯外部按下电梯按钮就是一个请求
  */
 public class OuterRequest extends Request{
-    private Direction direction; // 按下的方向
     private int currentFloor; // 按下电梯按钮时的楼层
     private Human presser; // 按按钮的人
 
     public OuterRequest(){
         stopFloor = currentFloor;
-    }
-
-    public Direction getDirection() {
-        return direction;
     }
 
     public OuterRequest setDirection(Direction direction) {

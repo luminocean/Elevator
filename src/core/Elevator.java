@@ -3,6 +3,7 @@ package core;
 import event.Callback;
 import event.EventEmitter;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,11 +28,9 @@ public class Elevator extends EventEmitter{
 
         // 移除所有已经到达的请求
         this.on(ElevatorEvent.OPEN, data -> {
-            int currentFloor = (Integer)data;
-            requests = requests.stream().filter((req) -> {
-                if(req.stopFloor == currentFloor) return false;
-                return true;
-            }).collect(Collectors.toList());
+            int currentFloor = (Integer) data;
+            requests = requests.stream().filter((req) -> !(req.stopFloor == currentFloor))
+                    .collect(Collectors.toList());
         });
 
         // 关门事件,执行下一个请求
@@ -69,6 +68,7 @@ public class Elevator extends EventEmitter{
     public Elevator innerPress(int targetFloor, Human presser) {
         // 构造外部按钮请求,添加到外部请求队列中
         InnerRequest req = new InnerRequest()
+                .setCurrentFloor(status.currentFloor)
                 .setTargetFloor(targetFloor)
                 .setPresser(presser);
         requests.add(req);
@@ -89,7 +89,7 @@ public class Elevator extends EventEmitter{
         Request first;
         // 将请求列表排序,如果电梯正在向上,则根据楼层高度倒序排列,优先处理最高楼层
         // 反之亦然
-        sort(requests, status.direction == Direction.DOWN);
+        sort(requests);
         if(requests.size() == 0) return;
 
         first = requests.get(0);
@@ -98,19 +98,79 @@ public class Elevator extends EventEmitter{
     }
 
     /**
-     * 将请求按照要停楼层高低排序
-     * @param requests 要排序的集合
-     * @param lowToHigh 是否从低到高(false为从高到低)
+     * 将所有请求按照优先级排序
+     * @param requests 请求的集合
      */
-    private void sort(List<Request> requests, boolean lowToHigh){
-        if(lowToHigh)
-            Collections.sort(requests,
-                (lhs, rhs) -> new Integer(lhs.getStopFloor())
-                        .compareTo(rhs.getStopFloor()));
-        else
-            Collections.sort(requests,
-                    (lhs, rhs) -> new Integer(lhs.getStopFloor())
-                            .compareTo(rhs.getStopFloor())*(-1));
+    private void sort(List<Request> requests){
+        // 电梯当前的楼层
+        int currentFloor = status.currentFloor;
+        Direction currentDirection = status.direction;
+
+        // 以电梯向上为例,所有请求分成以下几类:
+        // 1. 也是向上且请求楼层比当前当前电梯楼层高的
+        // 2. 向下的请求
+        // 3. 向上的请求且请求楼层比当前当前电梯楼层低的
+        // 电梯向下时相反
+
+        // 第一类请求
+        List<Request> list1 = requests.stream().filter( req -> {
+            // 是否同向
+            boolean isSame = req.getDirection() == currentDirection;
+            // 是否优先
+            boolean isSuper = (currentDirection == Direction.UP)?
+                    (req.getStopFloor() >= currentFloor)
+                    :(req.getStopFloor() < currentFloor);
+
+            return isSame && isSuper;
+        }).sorted( (lhs,rhs) -> {
+            // 第一类中,电梯向上时,越低越优先
+            if(currentDirection == Direction.UP){
+                return lhs.getStopFloor() - rhs.getStopFloor();
+            }else{
+                return -(lhs.getStopFloor() - rhs.getStopFloor());
+            }
+        }).collect(Collectors.toList());
+
+        // 第二类请求
+        List<Request> list2 = requests.stream().filter( req -> {
+            // 取反向的
+            boolean isSame = (req.getDirection() == currentDirection);
+            return !isSame;
+        }).sorted( (lhs,rhs) -> {
+            // 第二类中,电梯向上时越高越优先
+            if(currentDirection == Direction.UP){
+                return -(lhs.getStopFloor() - rhs.getStopFloor());
+            }else{
+                return lhs.getStopFloor() - rhs.getStopFloor();
+            }
+        }).collect(Collectors.toList());
+
+
+        // 第三类请求
+        List<Request> list3 = requests.stream().filter( req -> {
+            // 是否同向
+            boolean isSame = req.getDirection() == currentDirection;
+            // 是否优先
+            boolean isSuper = (currentDirection == Direction.UP)?
+                    (req.getStopFloor() >= currentFloor)
+                    :(req.getStopFloor() < currentFloor);
+
+            return isSame && !isSuper;
+        }).sorted( (lhs,rhs) -> {
+            // 第三类中,电梯向上时越低越优先
+            if(currentDirection == Direction.UP){
+                return lhs.getStopFloor() - rhs.getStopFloor();
+            }else{
+                return -(lhs.getStopFloor() - rhs.getStopFloor());
+            }
+        }).collect(Collectors.toList());
+
+        requests.clear();
+
+        // 组合三类请求
+        requests.addAll(list1);
+        requests.addAll(list2);
+        requests.addAll(list3);
     }
 
     // 覆盖父类方法
