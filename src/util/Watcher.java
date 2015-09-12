@@ -25,6 +25,15 @@ public class Watcher{
             Log.info(msg);
         });
 
+        // 内部按电梯按钮
+        elevator.on(ElevatorEvent.INNER_PRESSED, data -> {
+            InnerRequest req = (InnerRequest)data;
+            Human human = req.getPresser();
+            String msg = MessageFormat.format("{0}选择去{1}层",
+                    human.getName(), req.getTargetFloor());
+            Log.info(msg);
+        });
+
         // 移动
         elevator.on(ElevatorEvent.MOVING, data -> {
             int floor = (Integer)data;

@@ -21,9 +21,9 @@ public class Main {
                 .setCurrentFloor(3)
                 .setTargetFloor(8).go();
 
-        // 3秒后
+        // 暂停
         try {
-            Thread.sleep(3000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -32,6 +32,6 @@ public class Main {
                 .setName("Rachel")
                 .setElevator(elevator)
                 .setCurrentFloor(5)
-                .setTargetFloor(4).go();
+                .setTargetFloor(1).go();
     }
 }
