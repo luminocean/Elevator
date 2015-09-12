@@ -18,24 +18,25 @@ public class ElevatorThread implements Runnable{
     @Override
     public void run() {
         while(true){
+            // 到达目标楼层,开门
+            if(status.isMoving && status.currentFloor == status.targetFloor){
+                status.isOpen = true;
+                status.isMoving = false;
+                ele.emit(ElevatorEvent.OPEN, status.currentFloor);
+            }
+            // 关门
+            else if(status.isOpen){
+                status.isOpen = false;
+                ele.emit(ElevatorEvent.CLOSE, status.currentFloor);
+            }
             // 没有达到目标楼层,则进行移动
-            if(status.targetFloor != 0 && status.currentFloor != status.targetFloor){
+            else if(status.targetFloor != 0 && status.currentFloor != status.targetFloor){
                 if(status.currentFloor < status.targetFloor) moveFloor(status, true);
                 else moveFloor(status, false);
 
                 status.isMoving = true;
 
                 ele.emit(ElevatorEvent.MOVING, status.currentFloor);
-            }
-            // 到达目标楼层,开门
-            else if(status.isMoving && status.currentFloor == status.targetFloor){
-                status.isOpen = true;
-                status.isMoving = false;
-                ele.emit(ElevatorEvent.OPEN, status.currentFloor);
-            }
-            else if(status.isOpen){
-                status.isOpen = false;
-                ele.emit(ElevatorEvent.CLOSE, status.currentFloor);
             }
             // 原地等待
             else{

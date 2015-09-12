@@ -1,9 +1,6 @@
 package util;
 
-import core.Direction;
-import core.Elevator;
-import core.ElevatorEvent;
-import core.OuterRequest;
+import core.*;
 
 import java.text.MessageFormat;
 
@@ -21,8 +18,9 @@ public class Watcher{
         // 外部按电梯按钮
         elevator.on(ElevatorEvent.OUTER_PRESSED, data -> {
             OuterRequest req = (OuterRequest)data;
-            String msg = MessageFormat.format("{0}层有人要{1}楼",
-                    req.getCurrentFloor(),
+            Human human = req.getPresser();
+            String msg = MessageFormat.format("{0}层{1}要{2}楼",
+                    req.getCurrentFloor(), human.getName(),
                     req.getDirection() == Direction.UP ? "上" : "下");
             Log.info(msg);
         });
@@ -46,6 +44,18 @@ public class Watcher{
         elevator.on(ElevatorEvent.CLOSE, data -> {
             int floor = (Integer)data;
             Log.info(MessageFormat.format("电梯门在{0}层关闭", floor));
+        });
+
+        // 进入电梯
+        elevator.on(ElevatorEvent.ENTER, data -> {
+            Human human = (Human)data;
+            Log.info(MessageFormat.format("{0}进入电梯", human.getName()));
+        });
+
+        // 离开电梯
+        elevator.on(ElevatorEvent.LEAVE, data -> {
+            Human human = (Human)data;
+            Log.info(MessageFormat.format("{0}离开电梯", human.getName()));
         });
     }
 }

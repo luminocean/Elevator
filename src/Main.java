@@ -16,9 +16,10 @@ public class Main {
 
         // 乘客开始行动
         new Human()
+                .setName("Tom")
                 .setElevator(elevator)
-                .setCurrentFloor(7)
-                .setTargetFloor(2).go();
+                .setCurrentFloor(10)
+                .setTargetFloor(1).go();
 
         // 3秒后
         try {
@@ -28,8 +29,9 @@ public class Main {
         }
 
         new Human()
+                .setName("Rachel")
                 .setElevator(elevator)
-                .setCurrentFloor(5)
+                .setCurrentFloor(8)
                 .setTargetFloor(4).go();
     }
 }
