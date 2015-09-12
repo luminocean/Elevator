@@ -12,7 +12,9 @@ public class ElevatorEvent extends EventType {
             STOP = stub(),
             OUTER_PRESSED = stub(),
             MOVING = stub(),
-            PENDING = stub();
+            PENDING = stub(),
+            OPEN = stub(),
+            CLOSE = stub();
 
     public static ElevatorEvent stub(){
         return new ElevatorEvent();

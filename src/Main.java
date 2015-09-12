@@ -18,5 +18,11 @@ public class Main {
 
         // 按下电梯按钮
         elevator.buttonPressed(Direction.DOWN, 8, human);
+
+        // 按下电梯按钮
+        elevator.buttonPressed(Direction.DOWN, 4, human);
+
+        // 按下电梯按钮
+        elevator.buttonPressed(Direction.DOWN, 2, human);
     }
 }

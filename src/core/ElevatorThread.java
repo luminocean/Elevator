@@ -9,18 +9,36 @@ public class ElevatorThread implements Runnable{
     public static int TIME_INTERVAL = 1000;
 
     private Elevator ele;
-    public ElevatorThread(Elevator elevator){ this.ele = elevator; }
+    private ElevatorStatus status;
+    public ElevatorThread(Elevator elevator){
+        this.ele = elevator;
+        this.status = elevator.status;
+    }
 
     @Override
     public void run() {
         while(true){
-            // 如果没有达到目标楼层,则进行移动
-            if(ele.targetFloor != 0 && ele.currentFloor != ele.targetFloor){
-                if(ele.currentFloor < ele.targetFloor) ele.currentFloor++;
-                else ele.currentFloor--;
+            // 没有达到目标楼层,则进行移动
+            if(status.targetFloor != 0 && status.currentFloor != status.targetFloor){
+                if(status.currentFloor < status.targetFloor) moveFloor(status, true);
+                else moveFloor(status, false);
 
-                ele.emit(ElevatorEvent.MOVING, ele.currentFloor);
-            }else{
+                status.isMoving = true;
+
+                ele.emit(ElevatorEvent.MOVING, status.currentFloor);
+            }
+            // 到达目标楼层,开门
+            else if(status.isMoving && status.currentFloor == status.targetFloor){
+                status.isOpen = true;
+                status.isMoving = false;
+                ele.emit(ElevatorEvent.OPEN, status.currentFloor);
+            }
+            else if(status.isOpen){
+                status.isOpen = false;
+                ele.emit(ElevatorEvent.CLOSE, status.currentFloor);
+            }
+            // 原地等待
+            else{
                 ele.emit(ElevatorEvent.PENDING);
             }
 
@@ -30,6 +48,23 @@ public class ElevatorThread implements Runnable{
                 Log.error("电梯主线程被中断", e);
                 break;
             }
+        }
+    }
+
+    /**
+     * 将电梯的楼层移动一层
+     * @param status 电梯状态对象
+     * @param isIncrease 移动方向
+     */
+    private void moveFloor(ElevatorStatus status, boolean isIncrease){
+        if(isIncrease){
+            status.currentFloor++;
+            if(status.currentFloor == 0)
+                status.currentFloor++;
+        }else{
+            status.currentFloor--;
+            if(status.currentFloor == 0)
+                status.currentFloor--;
         }
     }
 }

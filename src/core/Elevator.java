@@ -2,9 +2,7 @@ package core;
 
 import event.Callback;
 import event.EventEmitter;
-import util.Log;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,19 +13,8 @@ import java.util.List;
 public class Elevator extends EventEmitter{
     // 外部电梯请求列表
     private List<OuterRequest> outerRequests = new LinkedList<>();
-    // 电梯初始状态设置
-    int currentFloor = 0;
-    Direction direction = Direction.UP;
-    int targetFloor = 0; // 要移动到的目标楼层
-
-    // 覆盖父类方法
-    public <T> void emit(ElevatorEvent type, T... data) {
-        super.emit(type, data);
-    }
-    // 覆盖父类方法
-    public void on(ElevatorEvent type, Callback callback) {
-        super.on(type, callback);
-    }
+    // 电梯状态值
+    ElevatorStatus status = new ElevatorStatus();
 
     /**
      * 电梯启动
@@ -35,7 +22,13 @@ public class Elevator extends EventEmitter{
     public void launch() {
         // 启动电梯主线程
         new Thread(new ElevatorThread(this)).start();
-        this.emit(ElevatorEvent.LAUNCH);
+        this.emit(ElevatorEvent.LAUNCH, status.currentFloor);
+
+        // 当前外部请求已经完成,移除
+        this.on(ElevatorEvent.OPEN, data -> outerRequests.remove(0));
+
+        // 关门事件,执行下一个请求
+        this.on(ElevatorEvent.CLOSE, data -> updateTarget());
     }
 
     /**
@@ -69,28 +62,33 @@ public class Elevator extends EventEmitter{
 
         // 触发事件
         this.emit(ElevatorEvent.OUTER_PRESSED, req);
-
-        move();
+        updateTarget();
 
         return this;
     }
 
     /**
-     * 电梯启动
+     * 更新电梯的移动目标
+     * 间接触发电梯移动
      */
-    private void move(){
+    private void updateTarget(){
         // 首先要处理的请求,之后给出具体的值
         OuterRequest first;
         // 将请求列表排序,如果电梯正在向上,则根据楼层高度倒序排列,优先处理最高楼层
         // 反之亦然
-        sort(outerRequests, direction == Direction.DOWN);
-        first = outerRequests.get(0);
-        if(first == null) return;
+        sort(outerRequests, status.direction == Direction.DOWN);
+        if(outerRequests.size() == 0) return;
 
+        first = outerRequests.get(0);
         // 设定目标楼层
-        targetFloor = first.getFloorLevel();
+        status.targetFloor = first.getFloorLevel();
     }
 
+    /**
+     * 将外部请求按照请求楼层高低排序
+     * @param collection 要排序的集合
+     * @param lowToHigh 是否从低到高(false为从高到低)
+     */
     private void sort(List<OuterRequest> collection, boolean lowToHigh){
         if(lowToHigh)
             Collections.sort(collection,
@@ -100,5 +98,14 @@ public class Elevator extends EventEmitter{
             Collections.sort(collection,
                     (lhs, rhs) -> new Integer(lhs.getFloorLevel())
                             .compareTo(rhs.getFloorLevel())*(-1));
+    }
+
+    // 覆盖父类方法
+    public <T> void emit(ElevatorEvent type, T... data) {
+        super.emit(type, data);
+    }
+    // 覆盖父类方法
+    public void on(ElevatorEvent type, Callback callback) {
+        super.on(type, callback);
     }
 }
