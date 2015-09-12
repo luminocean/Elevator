@@ -1,15 +1,17 @@
 package core;
 
-import java.util.List;
-
 /**
  * 外部电梯请求
  * 每次在电梯外部按下电梯按钮就是一个请求
  */
-public class OuterRequest {
-    private Direction direction;
-    private int floorLevel;
-    private List<Human> pressers;
+public class OuterRequest extends Request{
+    private Direction direction; // 按下的方向
+    private int currentFloor; // 按下电梯按钮时的楼层
+    private Human presser; // 按按钮的人
+
+    public OuterRequest(){
+        stopFloor = currentFloor;
+    }
 
     public Direction getDirection() {
         return direction;
@@ -20,21 +22,22 @@ public class OuterRequest {
         return this;
     }
 
-    public int getFloorLevel() {
-        return floorLevel;
+    public int getCurrentFloor() {
+        return currentFloor;
     }
 
-    public OuterRequest setFloorLevel(int floorLevel) {
-        this.floorLevel = floorLevel;
+    public OuterRequest setCurrentFloor(int currentFloor) {
+        this.currentFloor = currentFloor;
+        this.stopFloor = currentFloor;
         return this;
     }
 
-    public List<Human> getPressers() {
-        return pressers;
+    public Human getPresser() {
+        return presser;
     }
 
-    public OuterRequest setPressers(List<Human> pressers) {
-        this.pressers = pressers;
+    public OuterRequest setPresser(Human presser) {
+        this.presser = presser;
         return this;
     }
 }

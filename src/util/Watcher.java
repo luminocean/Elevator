@@ -21,8 +21,8 @@ public class Watcher{
         // 外部按电梯按钮
         elevator.on(ElevatorEvent.OUTER_PRESSED, data -> {
             OuterRequest req = (OuterRequest)data;
-            String msg = MessageFormat.format("{0}层有{1}人要{2}楼",
-                    req.getFloorLevel(), req.getPressers().size(),
+            String msg = MessageFormat.format("{0}层有人要{1}楼",
+                    req.getCurrentFloor(),
                     req.getDirection() == Direction.UP ? "上" : "下");
             Log.info(msg);
         });

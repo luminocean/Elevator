@@ -6,6 +6,7 @@ import event.EventEmitter;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 电梯类
@@ -24,8 +25,14 @@ public class Elevator extends EventEmitter{
         new Thread(new ElevatorThread(this)).start();
         this.emit(ElevatorEvent.LAUNCH, status.currentFloor);
 
-        // 当前外部请求已经完成,移除
-        this.on(ElevatorEvent.OPEN, data -> outerRequests.remove(0));
+        // 移除所有已经到达的请求
+        this.on(ElevatorEvent.OPEN, data -> {
+            int currentFloor = (Integer)data;
+            outerRequests = outerRequests.stream().filter((req) -> {
+                if(req.stopFloor == currentFloor) return false;
+                return true;
+            }).collect(Collectors.toList());
+        });
 
         // 关门事件,执行下一个请求
         this.on(ElevatorEvent.CLOSE, data -> updateTarget());
@@ -34,30 +41,16 @@ public class Elevator extends EventEmitter{
     /**
      * 电梯按钮被按下执行方法
      * @param direction 按下的方向
-     * @param floorLevel 当前所在的楼层
+     * @param currentFloor 当前所在的楼层
      * @param presser 按下按钮的人
      * @return 自身,实现链式调用
      */
-    public Elevator buttonPressed(Direction direction, int floorLevel, Human presser) {
-        // 构造成list转发请求
-        List<Human> list = new LinkedList<>();
-        list.add(presser);
-        return buttonPressed(direction, floorLevel, list);
-    }
-
-    /**
-     * 电梯按钮被按下执行方法
-     * @param direction 按下的方向
-     * @param floorLevel 当前所在的楼层
-     * @param pressers 按下按钮的人的列表
-     * @return 自身,实现链式调用
-     */
-    public Elevator buttonPressed(Direction direction, int floorLevel, List<Human> pressers) {
-        // 构造外部按钮请求
+    public Elevator buttonPressed(Direction direction, int currentFloor, Human presser) {
+        // 构造外部按钮请求,添加到外部请求队列中
         OuterRequest req = new OuterRequest()
                 .setDirection(direction)
-                .setFloorLevel(floorLevel)
-                .setPressers(pressers);
+                .setCurrentFloor(currentFloor)
+                .setPresser(presser);
         outerRequests.add(req);
 
         // 触发事件
@@ -81,23 +74,23 @@ public class Elevator extends EventEmitter{
 
         first = outerRequests.get(0);
         // 设定目标楼层
-        status.targetFloor = first.getFloorLevel();
+        status.targetFloor = first.getCurrentFloor();
     }
 
     /**
-     * 将外部请求按照请求楼层高低排序
+     * 将请求按照要停楼层高低排序
      * @param collection 要排序的集合
      * @param lowToHigh 是否从低到高(false为从高到低)
      */
     private void sort(List<OuterRequest> collection, boolean lowToHigh){
         if(lowToHigh)
             Collections.sort(collection,
-                (lhs, rhs) -> new Integer(lhs.getFloorLevel())
-                        .compareTo(rhs.getFloorLevel()));
+                (lhs, rhs) -> new Integer(lhs.getStopFloor())
+                        .compareTo(rhs.getStopFloor()));
         else
             Collections.sort(collection,
-                    (lhs, rhs) -> new Integer(lhs.getFloorLevel())
-                            .compareTo(rhs.getFloorLevel())*(-1));
+                    (lhs, rhs) -> new Integer(lhs.getStopFloor())
+                            .compareTo(rhs.getStopFloor())*(-1));
     }
 
     // 覆盖父类方法

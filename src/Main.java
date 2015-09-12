@@ -1,4 +1,3 @@
-import core.Direction;
 import core.Elevator;
 import core.Human;
 import util.Watcher;
@@ -7,7 +6,6 @@ public class Main {
     public static void main(String[] argv) {
         // 创建电梯和乘客对象
         Elevator elevator = new Elevator();
-        Human human = new Human();
 
         // 配置系统的监视器
         Watcher watcher = new Watcher();
@@ -16,13 +14,22 @@ public class Main {
         // 启动电梯
         elevator.launch();
 
-        // 按下电梯按钮
-        elevator.buttonPressed(Direction.DOWN, 8, human);
+        // 乘客开始行动
+        new Human()
+                .setElevator(elevator)
+                .setCurrentFloor(7)
+                .setTargetFloor(2).go();
 
-        // 按下电梯按钮
-        elevator.buttonPressed(Direction.DOWN, 4, human);
+        // 3秒后
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-        // 按下电梯按钮
-        elevator.buttonPressed(Direction.DOWN, 2, human);
+        new Human()
+                .setElevator(elevator)
+                .setCurrentFloor(5)
+                .setTargetFloor(4).go();
     }
 }
